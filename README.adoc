@@ -1,0 +1,22 @@
+= K8s-harness v1alpha1
+
+DDT tests in production’s like environment…
+
+== Requirements
+=== for user
+* Documentation https://github.com/k-harness/operator
+* Basic DNS flow inside k8s - `{service}.{namespace}.svc.cluster.local`
+* Jq  - https://stedolan.github.io/jq/[ref]
+* kubectl - https://kubernetes.io/docs/tasks/tools/[ref]
+* grpCURL - https://github.com/fullstorydev/grpcurl[ref]
+* telepresence - https://www.telepresence.io[ref]
+
+== for platform
+* k8s version >= 1.16 + correct access to apiVersion: `core.karness.io/v1alpha1` and kind: `Scenario`
+* target services uses GRPC reflection exposure
+
+
+== Live session
+
+
+

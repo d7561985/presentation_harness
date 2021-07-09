@@ -2,21 +2,153 @@
 
 DDT tests in production’s like environment…
 
+WARNING: some ref has no external ingress and exist only for internal usage
+
 == Requirements
 === for user
 * Documentation https://github.com/k-harness/operator
 * Basic DNS flow inside k8s - `{service}.{namespace}.svc.cluster.local`
+* go template notions - https://golang.org/pkg/text/template/#hdr-Actions[ref]
+* jsonpath - https://kubernetes.io/docs/reference/kubectl/jsonpath/[k8s ref] or https://jsonpath.com/[ref]
 * Jq  - https://stedolan.github.io/jq/[ref]
-* kubectl - https://kubernetes.io/docs/tasks/tools/[ref]
-* grpCURL - https://github.com/fullstorydev/grpcurl[ref]
-* telepresence - https://www.telepresence.io[ref]
+* `opt` kubectl - https://kubernetes.io/docs/tasks/tools/[ref] +  https://kubernetes.io/docs/reference/kubectl/cheatsheet[cheet sheet]
+* `opt` grpCURL - https://github.com/fullstorydev/grpcurl[ref]
+* `opt`  telepresence - https://www.telepresence.io[ref]
 
 == for platform
 * k8s version >= 1.16 + correct access to apiVersion: `core.karness.io/v1alpha1` and kind: `Scenario`
 * target services uses GRPC reflection exposure
 
 
+* [x] clusterrole expose for user
+[source,yaml]
+----
+- apiGroups:
+    - core.karness.io
+  resources:
+    - scenarios
+  verbs:
+    - '*'
+----
+
+
 == Live session
 
+=== Documentation
+https://github.com/k-harness/operator
+
+* [ ] Learn kubernetes plugin
+* [ ] Link CRD from repo of from cluster
+
+
+=== Examples
+* [ ] Acquaintance with manifests
+
+.Variables flow
+ spec.variables
+ spec.from_secret
+ spec.from_config
+ spec.from_config_map
+ spec.events.variables
+ spec.events.step_variables
+
+.Functions and pipelines
+[source,gotemplate]
+----
+{{( printf "%s%s" ( query "token" .TOKEN "providerId" .PROVIDER ) .CONTROLLER_SECURE_PASSWORD ) | md5 }}
+----
+
+* Grafana https://grafana.egt-ua.loc/d/Nr8BvwYMk/game-service-v2?orgId=1&refresh=5s&var-cluster=K8S-Dev&var-project=processor--habanero&var-interval=1m&var-le=0.005&var-quantile=0.5[Habanero]
+* Grafana https://grafana.egt-ua.loc/d/Nr8BvwYMk/game-service-v2?orgId=1&refresh=5s&var-cluster=K8S-Dev&var-project=processor--pragmatic&var-interval=1m&var-le=0.005&var-quantile=0.5[Pragmatic]
+
+[source,bash]
+----
+kubectl apply -f internal && kubectl get scenarios.core.karness.io -w
+----
+
+=== Oryx bot
+Decide how we should do that?
+
+==== Reproduce task
+* [ ] PLAY: https://site.dev.it-banda.com/en/homeh/game/anaconda-eye-rapids?mode=real
+* [ ] OBSERVE: https://graylog.egt-ua.loc/streams/5c362675c84b4c13e84a761d/search?rangetype=relative&fields=message%2Csource&width=1680&highlightMessage=&relative=1800&q=project%3A%20processor--oryx
+
+====  define services
+* [ ] game-manager
+* [ ] game-service
+* [ ] processor-oryx
+
+==== discover dns servers
+[source,bash]
+kubectl -n game-service  get svc
+
+[source]
+game-manager-sv                            ClusterIP   ***   <none>        9090/TCP                               483d
+game-session-sv                            ClusterIP   ***     <none>        9090/TCP                               2y118d
+processor--pragmatic-sv                    ClusterIP   ***   <none>        8443/TCP                               38d
+
+
+====  discover required system operations: grpc, html etc
+
+a. Select game grpc call
+b. Discover desired rpc call: `package`, `service` and `rpc`
+c. Discover request model
+
+.game-manager
+a.  https://gitlab.egt-ua.loc/apis/game-service/game-manager[api]
+b. grpc:
+* `package` game_manager.v2
+* `service` GameManager
+* `rpc` ListGames`
+c. ListGameTypesRequest
+
+.game-session
+a. https://gitlab.egt-ua.loc/apis/game-service/game-session[api]
+b. grpc:
+* `package` session
+* `service` GameSession
+* `rpc` Create
+c. CreateRequest
+
+.oryx
+a. 3d party api research:
+* https://wiki.egt-ua.loc/display/GS/Oryx+integration[spec]
+* https://gitlab.egt-ua.loc/game-service/processor/oryx[processor source]
+b. POST `/game-transaction`
+c. https://graylog.egt-ua.loc/streams/5c362675c84b4c13e84a761d/search?rangetype=relative&fields=message%2Csource&width=1680&highlightMessage=&relative=300&q=project%3A%20processor--oryx[from graylog]
+
+[source,json]
+{
+   "sessionToken":"09e5b569-155e-4d62-a05e-f4772461eb38",
+   "gameProviderId":"ORYX",
+   "playerId":"399779",
+   "roundId":"ORYX2PC_2067451",
+   "roundAction":"NONE",
+   "gameCode":"ORYX_HTML5_AER",
+   "bet":{
+      "transactionId":"ORYX2PC_2599436",
+      "amount":100,
+      "timestamp":1625827345
+   }
+}
+
+[source,json]
+request_header
+{
+    ...
+    "Authorization":["Basic ********"],
+    ...
+}
+
+==== make manifest
+[source,yaml]
+apiVersion: core.karness.io/v1alpha1
+kind: Scenario
+
+* [ ] manifest
+* [ ] variables
+* [ ] secrets
+* [ ] event of selection game
+* [ ] event of creation session
 
 
